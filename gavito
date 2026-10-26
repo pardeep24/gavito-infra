@@ -34,9 +34,18 @@ edge_compose() {
     -f "$GAVITO_HOME/proxy/compose.yml" "$@"
 }
 
+# Starts the front proxy, unless another container still holds port 443 (the old setup, where
+# retail's Caddy was the front door): then only the network is created, so apps can be deployed
+# from here first and the switch itself (./gavito proxy) is quick.
 edge_up() {
   [ -f "$ENV_DIR/gavito.env" ] || die "env/gavito.env is missing. Start from env/gavito.env.example."
   docker network inspect "$EDGE_NETWORK" >/dev/null 2>&1 || docker network create "$EDGE_NETWORK" >/dev/null
+  local holder
+  holder=$(docker ps --filter publish=443 --format '{{.Names}}' | grep -vx "$EDGE_CONTAINER" | head -1 || true)
+  if [ -n "$holder" ]; then
+    warn "front proxy not started: $holder holds port 443. Free it, then run ./gavito proxy"
+    return 0
+  fi
   edge_compose up -d
 }
 
@@ -49,6 +58,7 @@ edge_rejoin() {
 
 cmd_proxy() {
   edge_up
+  docker inspect "$EDGE_CONTAINER" >/dev/null 2>&1 || die "the front proxy is not running"
   edge_rejoin
   docker exec "$EDGE_CONTAINER" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
   docker exec "$EDGE_CONTAINER" caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
