@@ -16,6 +16,9 @@ app expects.
 On the current server, each file is the app's existing settings file moved here, so nothing is
 regenerated: Retail's `APP_KEY` and Edu's database passwords must never change.
 
+For Gavito Edu, set `FRONT_PROXY_CONTAINER=gavito-edge` in both `school-*.env` files (today it is
+`retail_cloud_prod_caddy`).
+
 For WhatsApp CRM behind the front proxy, `whatsapp.env` also needs:
 
 ```sh
