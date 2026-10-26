@@ -1,0 +1,14 @@
+# CRM Cafe. The platform's own addresses get certificates at start-up, like every other site.
+food.gavitotechnologies.com, app.food.gavitotechnologies.com {
+	reverse_proxy crm-cafe-web:80
+}
+
+# Each cafe's storefront (<slug>.food.gavitotechnologies.com, which needs a *.food DNS record) and
+# each verified custom domain: any other host gets a certificate on its first visit, once Cafe's
+# tls-allowed check (on_demand_tls in ../Caddyfile) says the host belongs to a cafe.
+https:// {
+	tls {
+		on_demand
+	}
+	reverse_proxy crm-cafe-web:80
+}

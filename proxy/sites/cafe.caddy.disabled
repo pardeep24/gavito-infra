@@ -1,4 +1,0 @@
-# CRM Cafe. Rename to cafe.caddy once Cafe runs in Docker on this server (README, "Cafe").
-# food.gavitotechnologies.com {
-# 	reverse_proxy crm-cafe-web:80
-# }

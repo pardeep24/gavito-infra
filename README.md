@@ -10,14 +10,15 @@ what runs them together: the front proxy, each app's settings, and the `./gavito
 | Retail ERP       | `pardeep24/retail-cloud-erp`   | `retail.gavitotechnologies.com`                   |
 | Gavito Edu       | `pardeep24/school-saas`        | `edu.` and `staging.edu.gavitotechnologies.com`   |
 | WhatsApp CRM     | `pardeep24/gavito-whatsapp-crm`| `crm.gavitotechnologies.com`                      |
-| CRM Cafe         | `pardeep24/crm-cafe`           | `food.gavitotechnologies.com` (not in Docker yet) |
+| CRM Cafe         | `pardeep24/CRM-Cafe`           | `food.gavitotechnologies.com`, `*.food.`          |
 
 ```
 Internet ── 80/443 ──> gavito-edge (Caddy, HTTPS for every address)
                          ├─> gavito-website:80            (website)
                          ├─> retail_cloud_prod_caddy:80   (retail's own Caddy → Laravel, Reverb)
                          ├─> school-saas-*-caddy-1:80     (Edu's own Caddy → API, web app)
-                         └─> gavito-caddy:80              (WhatsApp CRM's own Caddy → web, API)
+                         ├─> gavito-caddy:80              (WhatsApp CRM's own Caddy → web, API)
+                         └─> crm-cafe-web:80              (Cafe's own Caddy → web, API)
 ```
 
 Only `gavito-edge` has public ports. Each app keeps its own Compose project, database and network,
@@ -75,8 +76,9 @@ copied consistently. Run it at a quiet hour. Each app's own nightly backups keep
   `SCHOOL_APP_ROOT` (today `/opt/school-saas-src` and `/opt/school-saas-<target>`).
 - **Website and WhatsApp CRM:** nothing required. WhatsApp CRM's settings point it at the
   `gavito-edge` network (`env/README.md`).
-- **Cafe:** Dockerfiles for the API, Celery worker and web app, a production compose file, and a
-  single Alembic migration head. Then `stacks/cafe.sh` and `proxy/sites/cafe.caddy` are switched on.
+- **Cafe:** Dockerfiles, `deploy/docker-compose.yml` and the `tls-allowed` check the front proxy
+  asks before getting a certificate for a cafe's subdomain (pardeep24/CRM-Cafe#2). DNS needs both
+  `food` and `*.food` pointing at the server.
 
 ## Switching the current server over
 

@@ -12,6 +12,7 @@ app expects.
 | `school-staging.env`      | Gavito Edu staging   | `run/school/school-saas-staging/.env`             | the staging server's current `/opt/school-saas-staging/.env`     |
 | `school-production.env`   | Gavito Edu live      | `run/school/school-saas-production/.env`          | the server's current `/opt/school-saas-production/.env`          |
 | `whatsapp.env`            | WhatsApp CRM         | `run/whatsapp/src/deploy/.env`                    | the WhatsApp repo's `deploy/setup.sh` output                     |
+| `cafe.env`                | CRM Cafe             | `run/cafe/src/deploy/.env`                        | the Cafe repo's `deploy/.env.example`                            |
 
 On the current server, each file is the app's existing settings file moved here, so nothing is
 regenerated: Retail's `APP_KEY` and Edu's database passwords must never change.
