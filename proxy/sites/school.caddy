@@ -1,0 +1,27 @@
+# Gavito Edu, live and staging. The school. names are its old addresses: they keep answering the
+# API for phone apps built for them.
+edu.gavitotechnologies.com {
+	reverse_proxy school-saas-production-caddy-1:80
+}
+
+school.gavitotechnologies.com {
+	handle /v1/* {
+		reverse_proxy school-saas-production-caddy-1:80
+	}
+	handle {
+		redir https://edu.gavitotechnologies.com{uri} permanent
+	}
+}
+
+staging.edu.gavitotechnologies.com {
+	reverse_proxy school-saas-staging-caddy-1:80
+}
+
+staging.school.gavitotechnologies.com {
+	handle /v1/* {
+		reverse_proxy school-saas-staging-caddy-1:80
+	}
+	handle {
+		redir https://staging.edu.gavitotechnologies.com{uri} permanent
+	}
+}

@@ -1,0 +1,7 @@
+# Front proxy for every Gavito Technologies site on this server. One file per product in sites/.
+# Each app's own Caddy (or Apache) behind it serves plain HTTP inside Docker.
+{
+	email {$ACME_EMAIL}
+}
+
+import sites/*.caddy

@@ -1,0 +1,4 @@
+# The company website.
+gavitotechnologies.com, www.gavitotechnologies.com {
+	reverse_proxy gavito-website:80
+}

@@ -1,0 +1,4 @@
+# WhatsApp CRM. Rename to whatsapp.caddy and put in its real address once it is live here.
+# whatsapp.gavitotechnologies.com {
+# 	reverse_proxy gavito-caddy:80
+# }

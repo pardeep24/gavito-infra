@@ -1,0 +1,37 @@
+# The front proxy: the only container with public ports on the server. It gets the HTTPS
+# certificates for every address and forwards each one to its app's entry container over
+# Docker networks (./gavito joins it to each app's network after every deploy).
+name: gavito-edge
+
+services:
+  edge:
+    image: caddy:2.10
+    container_name: gavito-edge
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in env/gavito.env}
+      RETAIL_HOSTS: ${RETAIL_HOSTS:-retail.gavitotechnologies.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./sites:/etc/caddy/sites:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [edge]
+    logging:
+      driver: json-file
+      options: { max-size: '10m', max-file: '5' }
+
+networks:
+  # Created by ./gavito; WhatsApp CRM's Caddy joins it from its own compose file.
+  edge:
+    name: gavito-edge
+    external: true
+
+volumes:
+  # Certificates. A server move copies this volume, so the new server starts with valid ones.
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,5 @@
+# Retail Cloud ERP. RETAIL_HOSTS may also list its old address (APP_OLD_DOMAIN in env/retail.env,
+# for example srv1368022.hstgr.cloud): retail's own Caddy answers the API there and redirects browsers.
+{$RETAIL_HOSTS} {
+	reverse_proxy retail_cloud_prod_caddy:80
+}
