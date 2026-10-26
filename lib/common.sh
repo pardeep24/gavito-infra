@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Shared helpers for ./gavito and the stack files. Sourced, never run on its own.
 
 # The folder this repository is cloned to on the server (normally /opt/gavito).

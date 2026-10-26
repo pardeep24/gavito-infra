@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Company website, gavitotechnologies.com (pardeep24/a2zetechie). One PHP + Apache container.
 WEBSITE_REPO=pardeep24/a2zetechie
 WEBSITE_SRC="$RUN_DIR/website/src"
