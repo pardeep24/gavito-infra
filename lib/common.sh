@@ -3,6 +3,9 @@
 
 # The folder this repository is cloned to on the server (normally /opt/gavito).
 GAVITO_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Run from here: docker compose fails with "stat .: permission denied" when started from a folder
+# the deploy user can't read, such as /root after `sudo -u deploy`.
+cd "$GAVITO_HOME"
 RUN_DIR="$GAVITO_HOME/run"
 ENV_DIR="$GAVITO_HOME/env"
 BACKUP_DIR="$GAVITO_HOME/backups"
