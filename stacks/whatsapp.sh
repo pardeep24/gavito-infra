@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Gavito WhatsApp CRM (pardeep24/gavito-whatsapp-crm). Already supports running behind another
 # proxy: env/whatsapp.env sets COMPOSE_FILE to its behind-proxy files and PROXY_NETWORK to the
 # front proxy's network, where its Caddy answers as gavito-caddy:80.

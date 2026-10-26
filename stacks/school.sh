@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Gavito Edu, edu.gavitotechnologies.com and staging.edu (pardeep24/school-saas).
 # Its own deploy-on-server.sh builds and releases each copy; this only points it at folders here.
 SCHOOL_REPO=pardeep24/school-saas
