@@ -58,7 +58,7 @@ edge_rejoin() {
 
 cmd_proxy() {
   edge_up
-  docker inspect "$EDGE_CONTAINER" >/dev/null 2>&1 || die "the front proxy is not running"
+  docker container inspect "$EDGE_CONTAINER" >/dev/null 2>&1 || die "the front proxy is not running"
   edge_rejoin
   docker exec "$EDGE_CONTAINER" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
   docker exec "$EDGE_CONTAINER" caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
