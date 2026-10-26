@@ -15,8 +15,8 @@ BACKUP_DIR="$GAVITO_HOME/backups"
 EDGE_CONTAINER=gavito-edge
 EDGE_NETWORK=gavito-edge
 
-# Every app, in the order they start. Cafe joins once it runs in Docker.
-ALL_STACKS=(website retail school whatsapp)
+# Every app, in the order they start.
+ALL_STACKS=(website retail school whatsapp cafe)
 
 log() { printf '==> %s\n' "$*"; }
 warn() { printf '!! %s\n' "$*" >&2; }

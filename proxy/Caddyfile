@@ -2,6 +2,11 @@
 # Each app's own Caddy (or Apache) behind it serves plain HTTP inside Docker.
 {
 	email {$ACME_EMAIL}
+	# Only hosts Cafe knows (its own, each cafe's subdomain, verified custom domains) may get an
+	# on-demand certificate (sites/cafe.caddy); the check answers 404 for anything else.
+	on_demand_tls {
+		ask http://crm-cafe-web/api/public/tls-allowed
+	}
 }
 
 import sites/*.caddy
