@@ -151,6 +151,8 @@ cmd_snapshot() {
 
 cmd_restore() {
   local archive="${1:?usage: ./gavito restore <archive>}" work
+  # A relative path is relative to where ./gavito was started, not to $GAVITO_HOME.
+  [[ "$archive" = /* ]] || archive="$CALLER_DIR/$archive"
   work=$(mktemp -d)
   trap 'rm -rf "$work"' RETURN
   if [[ "$archive" == *.enc ]]; then
