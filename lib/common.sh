@@ -73,8 +73,9 @@ link_env() {
 edge_join() {
   local network="$1"
   docker network inspect "$network" >/dev/null 2>&1 || { warn "network $network does not exist yet"; return 0; }
-  docker inspect "$EDGE_CONTAINER" >/dev/null 2>&1 || return 0
-  if ! docker inspect "$EDGE_CONTAINER" --format '{{json .NetworkSettings.Networks}}' | grep -q "\"$network\""; then
+  # `docker container inspect`, not `docker inspect`: the edge network has the same name.
+  docker container inspect "$EDGE_CONTAINER" >/dev/null 2>&1 || return 0
+  if ! docker container inspect "$EDGE_CONTAINER" --format '{{json .NetworkSettings.Networks}}' | grep -q "\"$network\""; then
     docker network connect "$network" "$EDGE_CONTAINER"
   fi
 }
