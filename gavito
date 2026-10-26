@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+# Runs every Gavito Technologies app on this server. See README.md.
+#
+#   ./gavito up                 front proxy + every app, at the versions in versions.env
+#   ./gavito deploy <app> [ref] one app, at versions.env's ref or the one given
+#   ./gavito start | stop [app] start or stop without rebuilding
+#   ./gavito status             what is running
+#   ./gavito proxy              reload the front proxy's config and rejoin every app network
+#   ./gavito snapshot           stop everything, write one archive with all data, start again
+#   ./gavito restore <archive>  on a new server: put that data back, then run ./gavito up
+#
+# Apps: website retail school whatsapp (cafe once it runs in Docker).
+set -euo pipefail
+
+# shellcheck source=lib/common.sh
+. "$(dirname "$0")/lib/common.sh"
+for f in "$GAVITO_HOME"/stacks/*.sh; do
+  # shellcheck source=/dev/null
+  . "$f"
+done
+load_settings
+
+stacks_from_args() {
+  if [ $# -eq 0 ]; then printf '%s\n' "${ALL_STACKS[@]}"; return; fi
+  local s
+  for s in "$@"; do
+    declare -F "${s}_deploy" >/dev/null || die "Unknown app: $s (apps: ${ALL_STACKS[*]})"
+    echo "$s"
+  done
+}
+
+edge_compose() {
+  docker compose --project-directory "$GAVITO_HOME/proxy" --env-file "$ENV_DIR/gavito.env" \
+    -f "$GAVITO_HOME/proxy/compose.yml" "$@"
+}
+
+edge_up() {
+  [ -f "$ENV_DIR/gavito.env" ] || die "env/gavito.env is missing. Start from env/gavito.env.example."
+  docker network inspect "$EDGE_NETWORK" >/dev/null 2>&1 || docker network create "$EDGE_NETWORK" >/dev/null
+  edge_compose up -d
+}
+
+edge_rejoin() {
+  local s n
+  for s in "${ALL_STACKS[@]}"; do
+    for n in $("${s}_networks"); do edge_join "$n"; done
+  done
+}
+
+cmd_proxy() {
+  edge_up
+  edge_rejoin
+  docker exec "$EDGE_CONTAINER" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+  docker exec "$EDGE_CONTAINER" caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+  log "front proxy reloaded"
+}
+
+cmd_up() {
+  edge_up
+  local s
+  for s in $(stacks_from_args "$@"); do
+    log "deploying $s"
+    "${s}_deploy"
+  done
+  edge_rejoin
+  cmd_status
+}
+
+cmd_deploy() {
+  [ $# -ge 1 ] || die "usage: ./gavito deploy <app> [ref]"
+  stacks_from_args "$1" >/dev/null
+  edge_up
+  "${1}_deploy" "${2:-}"
+}
+
+cmd_start() {
+  edge_up
+  local s
+  for s in $(stacks_from_args "$@"); do "${s}_start"; done
+  edge_rejoin
+}
+
+cmd_stop() {
+  local s
+  for s in $(stacks_from_args "$@"); do "${s}_stop"; done
+  if [ $# -eq 0 ]; then edge_compose stop; fi
+}
+
+cmd_status() {
+  local s p
+  for p in gavito-edge $(for s in "${ALL_STACKS[@]}"; do "${s}_projects"; done); do
+    echo "--- $p"
+    docker ps --filter "label=com.docker.compose.project=$p" --format '  {{.Names}}\t{{.Status}}'
+  done
+}
+
+# Every Docker volume of every app and of the front proxy, as "project volume name" lines.
+all_volumes() {
+  local s p
+  for p in gavito-edge $(for s in "${ALL_STACKS[@]}"; do "${s}_projects"; done); do
+    docker volume ls --quiet --filter "label=com.docker.compose.project=$p" | while read -r name; do
+      echo "$p $(docker volume inspect "$name" --format '{{index .Labels "com.docker.compose.volume"}}') $name"
+    done
+  done
+}
+
+# A cold copy: every app is stopped while its volumes are copied, so each database is consistent
+# whatever engine it runs. The apps are down for the few minutes this takes.
+cmd_snapshot() {
+  local stamp out work
+  stamp=$(date -u +%Y%m%dT%H%M%SZ)
+  out="$BACKUP_DIR/gavito-$stamp.tar"
+  mkdir -p "$BACKUP_DIR"
+  work=$(mktemp -d "$BACKUP_DIR/.snapshot-XXXX")
+  chmod 700 "$work"
+  trap 'rm -rf "$work"' RETURN
+
+  log "stopping every app"
+  cmd_stop
+  all_volumes > "$work/volumes.txt"
+  while read -r project volume name; do
+    log "copying volume $name"
+    docker run --rm -v "$name:/v:ro" -v "$work:/out" alpine:3.22 tar -C /v -czf "/out/$name.tgz" .
+  done < "$work/volumes.txt"
+  log "copying settings and app folders"
+  tar -C "$GAVITO_HOME" --exclude='run/*/src' --exclude=node_modules -czf "$work/files.tgz" env run versions.env
+  log "starting every app again"
+  cmd_start
+
+  tar -C "$work" -cf "$out" .
+  if [ -n "${SNAPSHOT_PASSPHRASE:-}" ]; then
+    openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:SNAPSHOT_PASSPHRASE -in "$out" -out "$out.enc"
+    rm -f "$out"
+    out="$out.enc"
+  else
+    warn "SNAPSHOT_PASSPHRASE is not set: the archive holds every password unencrypted"
+  fi
+  chmod 600 "$out"
+  log "snapshot written: $out ($(du -h "$out" | cut -f1)). Copy it off this server."
+}
+
+cmd_restore() {
+  local archive="${1:?usage: ./gavito restore <archive>}" work
+  work=$(mktemp -d)
+  trap 'rm -rf "$work"' RETURN
+  if [[ "$archive" == *.enc ]]; then
+    : "${SNAPSHOT_PASSPHRASE:?set SNAPSHOT_PASSPHRASE to the passphrase the snapshot was made with}"
+    openssl enc -d -aes-256-cbc -pbkdf2 -pass env:SNAPSHOT_PASSPHRASE -in "$archive" | tar -C "$work" -xf -
+  else
+    tar -C "$work" -xf "$archive"
+  fi
+
+  while read -r project volume name; do
+    if docker volume inspect "$name" >/dev/null 2>&1; then
+      die "volume $name already exists here; restore only onto a server without these apps"
+    fi
+  done < "$work/volumes.txt"
+
+  log "restoring settings and app folders"
+  tar -C "$GAVITO_HOME" -xzf "$work/files.tgz"
+  while read -r project volume name; do
+    log "restoring volume $name"
+    docker volume create --label "com.docker.compose.project=$project" \
+      --label "com.docker.compose.volume=$volume" "$name" >/dev/null
+    docker run --rm -v "$name:/v" -v "$work:/in:ro" alpine:3.22 tar -C /v -xzf "/in/$name.tgz"
+  done < "$work/volumes.txt"
+  log "data restored. Next: ./gavito up, then point DNS at this server."
+}
+
+cmd="${1:-help}"
+shift || true
+case "$cmd" in
+  up | deploy | start | stop | status | proxy | snapshot | restore) "cmd_$cmd" "$@" ;;
+  *) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//' ;;
+esac

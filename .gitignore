@@ -1,0 +1,5 @@
+# Everything below exists only on the server.
+/run/
+/backups/
+/env/*.env
+!/env/*.env.example

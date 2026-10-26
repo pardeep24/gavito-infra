@@ -1,0 +1,8 @@
+# Runs retail's Caddy behind the front proxy: no public ports, plain HTTP on :80 inside Docker.
+# Needs the retail change that reads its site address from RETAIL_SITE_ADDRESS and trusts the
+# front proxy's X-Forwarded-* headers (see README, "Changes in the app repositories").
+services:
+  caddy:
+    ports: !reset []
+    environment:
+      RETAIL_SITE_ADDRESS: ':80'
