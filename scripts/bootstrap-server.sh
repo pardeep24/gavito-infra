@@ -32,4 +32,10 @@ fi
 id deploy >/dev/null 2>&1 || useradd --create-home --shell /bin/bash deploy
 usermod -aG docker deploy
 
+# WhatsApp CRM's nightly database dump (its own deploy/backup.sh, kept 14 days). The other apps
+# run theirs inside Docker. Its setup.sh writes the same file for a standalone install.
+home="$(cd "$(dirname "$0")/.." && pwd)"
+echo "30 2 * * * deploy cd $home/run/whatsapp/src/deploy && mkdir -p backups && ./backup.sh >> backups/backup.log 2>&1" \
+  > /etc/cron.d/gavito-backup
+
 echo "Done. Next: clone gavito-infra to /opt/gavito (owned by deploy), fill in env/, then ./gavito up"
