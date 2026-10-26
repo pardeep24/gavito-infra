@@ -1,0 +1,5 @@
+# WhatsApp CRM. Its Caddy joins the gavito-edge network as gavito-caddy (PROXY_NETWORK=gavito-edge
+# in env/whatsapp.env) and serves the web app and the Meta/Razorpay webhooks behind it.
+crm.gavitotechnologies.com {
+	reverse_proxy gavito-caddy:80
+}
