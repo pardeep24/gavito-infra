@@ -9,8 +9,8 @@ what runs them together: the front proxy, each app's settings, and the `./gavito
 | Company website  | `pardeep24/a2zetechie`         | `gavitotechnologies.com`, `www.`                  |
 | Retail ERP       | `pardeep24/retail-cloud-erp`   | `retail.gavitotechnologies.com`                   |
 | Gavito Edu       | `pardeep24/school-saas`        | `edu.` and `staging.edu.gavitotechnologies.com`   |
-| WhatsApp CRM     | `pardeep24/gavito-whatsapp-crm`| (not live yet)                                    |
-| CRM Cafe         | `pardeep24/crm-cafe`           | `*.gavicatechnologies.cloud` (not in Docker yet)  |
+| WhatsApp CRM     | `pardeep24/gavito-whatsapp-crm`| `crm.gavitotechnologies.com`                      |
+| CRM Cafe         | `pardeep24/crm-cafe`           | `food.gavitotechnologies.com` (not in Docker yet) |
 
 ```
 Internet ── 80/443 ──> gavito-edge (Caddy, HTTPS for every address)
