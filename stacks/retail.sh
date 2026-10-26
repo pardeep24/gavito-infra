@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Retail Cloud ERP, retail.gavitotechnologies.com (pardeep24/retail-cloud-erp).
 # Laravel + MySQL + Redis + Reverb, served by its own Caddy, which sits behind the front proxy.
 RETAIL_REPO=pardeep24/retail-cloud-erp

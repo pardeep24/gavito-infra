@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Gavito Edu, edu.gavitotechnologies.com and staging.edu (pardeep24/school-saas).
 # Its own deploy-on-server.sh builds and releases each copy; this only points it at folders here.
 SCHOOL_REPO=pardeep24/school-saas
@@ -11,13 +12,13 @@ school_deploy() {
   for target in staging production; do
     mkdir -p "$RUN_DIR/school/school-saas-$target"
     link_env "school-$target" "$RUN_DIR/school/school-saas-$target/.env"
-    # SCHOOL_SRC and SCHOOL_APP_ROOT need the small school-saas change that makes these paths
+    # SCHOOL_SRC and SCHOOL_APP_ROOT come from pardeep24/school-saas#80, which makes these paths
     # settable (they are /opt/school-saas-src and /opt/school-saas-<target> today).
     if [ "$target" = staging ]; then
-      SCHOOL_SRC="$SCHOOL_SRC" SCHOOL_APP_ROOT="$RUN_DIR/school" FRONT_PROXY_CONTAINER="$EDGE_CONTAINER" \
+      SCHOOL_SRC="$SCHOOL_SRC" SCHOOL_APP_ROOT="$RUN_DIR/school" \
         "$SCHOOL_SRC/infra/staging/deploy-on-server.sh" staging "$(git -C "$SCHOOL_SRC" rev-parse HEAD)"
     else
-      SCHOOL_SRC="$SCHOOL_SRC" SCHOOL_APP_ROOT="$RUN_DIR/school" FRONT_PROXY_CONTAINER="$EDGE_CONTAINER" \
+      SCHOOL_SRC="$SCHOOL_SRC" SCHOOL_APP_ROOT="$RUN_DIR/school" \
         "$SCHOOL_SRC/infra/staging/deploy-on-server.sh" production
     fi
     edge_join "school-saas-${target}_default"
