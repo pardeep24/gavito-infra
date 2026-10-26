@@ -8,7 +8,12 @@ SCHOOL_SRC="$RUN_DIR/school/src"
 # `./gavito deploy school` does both; `./gavito deploy school <ref>` sends <ref> to staging first.
 school_deploy() {
   checkout school "$SCHOOL_REPO" "${1:-$SCHOOL_REF}"
-  local target
+  # The release script always comes from main, whatever version is released: older versions of it
+  # predate SCHOOL_SRC and SCHOOL_APP_ROOT and would release to /opt/school-saas-* instead.
+  local script="$RUN_DIR/school/deploy-on-server.sh" target
+  git -C "$SCHOOL_SRC" show origin/main:infra/staging/deploy-on-server.sh > "$script"
+  grep -q SCHOOL_APP_ROOT "$script" || die "school-saas main has no SCHOOL_APP_ROOT support"
+  chmod +x "$script"
   for target in staging production; do
     mkdir -p "$RUN_DIR/school/school-saas-$target"
     link_env "school-$target" "$RUN_DIR/school/school-saas-$target/.env"
@@ -16,10 +21,10 @@ school_deploy() {
     # settable (they are /opt/school-saas-src and /opt/school-saas-<target> today).
     if [ "$target" = staging ]; then
       SCHOOL_SRC="$SCHOOL_SRC" SCHOOL_APP_ROOT="$RUN_DIR/school" \
-        "$SCHOOL_SRC/infra/staging/deploy-on-server.sh" staging "$(git -C "$SCHOOL_SRC" rev-parse HEAD)"
+        "$script" staging "$(git -C "$SCHOOL_SRC" rev-parse HEAD)"
     else
       SCHOOL_SRC="$SCHOOL_SRC" SCHOOL_APP_ROOT="$RUN_DIR/school" \
-        "$SCHOOL_SRC/infra/staging/deploy-on-server.sh" production
+        "$script" production
     fi
     edge_join "school-saas-${target}_default"
   done
