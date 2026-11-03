@@ -13,6 +13,7 @@ app expects.
 | `school-production.env`   | Gavito Edu live      | `run/school/school-saas-production/.env`          | the server's current `/opt/school-saas-production/.env`          |
 | `whatsapp.env`            | WhatsApp CRM         | `run/whatsapp/src/deploy/.env`                    | the WhatsApp repo's `deploy/setup.sh` output                     |
 | `cafe.env`                | CRM Cafe             | `run/cafe/src/deploy/.env`                        | the Cafe repo's `deploy/.env.example`                            |
+| `nclfs-demo.env`          | NCLFS demo           | `run/nclfs/nclfs-demo/.env`                       | `nclfs-demo.env.example`                                         |
 
 On the current server, each file is the app's existing settings file moved here, so nothing is
 regenerated: Retail's `APP_KEY` and Edu's database passwords must never change.
