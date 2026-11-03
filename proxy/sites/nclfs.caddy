@@ -1,0 +1,4 @@
+# The NCLFS school app demo (pardeep24/nclfns-school-app), demo data only.
+nclfns.gavitotechnologies.com {
+	reverse_proxy nclfs-demo-caddy-1:80
+}

@@ -11,6 +11,7 @@ what runs them together: the front proxy, each app's settings, and the `./gavito
 | Gavito Edu       | `pardeep24/school-saas`        | `edu.` and `staging.edu.gavitotechnologies.com`   |
 | WhatsApp CRM     | `pardeep24/gavito-whatsapp-crm`| `crm.gavitotechnologies.com`                      |
 | CRM Cafe         | `pardeep24/CRM-Cafe`           | `food.gavitotechnologies.com`, `*.food.`          |
+| NCLFS demo       | `pardeep24/nclfns-school-app`  | `nclfns.gavitotechnologies.com` (demo data only)  |
 
 ```
 Internet ── 80/443 ──> gavito-edge (Caddy, HTTPS for every address)
@@ -18,7 +19,8 @@ Internet ── 80/443 ──> gavito-edge (Caddy, HTTPS for every address)
                          ├─> retail_cloud_prod_caddy:80   (retail's own Caddy → Laravel, Reverb)
                          ├─> school-saas-*-caddy-1:80     (Edu's own Caddy → API, web app)
                          ├─> gavito-caddy:80              (WhatsApp CRM's own Caddy → web, API)
-                         └─> crm-cafe-web:80              (Cafe's own Caddy → web, API)
+                         ├─> crm-cafe-web:80              (Cafe's own Caddy → web, API)
+                         └─> nclfs-demo-caddy-1:80        (NCLFS demo's own Caddy → API, web app)
 ```
 
 Only `gavito-edge` has public ports. Each app keeps its own Compose project, database and network,

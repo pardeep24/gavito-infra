@@ -16,7 +16,7 @@ EDGE_CONTAINER=gavito-edge
 EDGE_NETWORK=gavito-edge
 
 # Every app, in the order they start.
-ALL_STACKS=(website retail school whatsapp cafe)
+ALL_STACKS=(website retail school whatsapp cafe nclfs)
 
 log() { printf '==> %s\n' "$*"; }
 warn() { printf '!! %s\n' "$*" >&2; }
