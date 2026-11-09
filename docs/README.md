@@ -28,7 +28,16 @@ git pull                         # this repository: versions.env, proxy sites, s
 - **Always as `deploy`, never as root.** `/opt/gavito` belongs to `deploy`; git run as root stops
   with "detected dubious ownership". Don't add a `safe.directory` exception: root-run deploys
   leave root-owned files in `run/` and `env/` that later deploys can't change. If that has
-  already happened, fix it once as root with `chown -R deploy:deploy /opt/gavito`.
+  already happened, fix it once as root, skipping every `backups/` folder:
+
+  ```sh
+  find /opt/gavito -path '*/backups' -prune -o ! -user deploy -exec chown -h deploy:deploy {} +
+  ```
+
+  Never `chown -R` the whole folder: in Edu's and the NCLFS demo's `backups/`, `wal-g` and
+  `status` belong to the database container's `postgres` user on purpose, and taking them away
+  stops the database backups. A `chown` run as `deploy` failing on exactly those folders is
+  expected.
 - **A code update** is: merge the change to the app repository's deployed branch (normally
   `main`), then `./gavito deploy <app>`. `./gavito` fetches the code into `run/<app>/src`, checks
   out the ref, links `env/<app>.env` into place and runs the app's own build and release.
