@@ -53,6 +53,9 @@ so one app's deploy or failure can't touch another's data.
 Each deploy uses the app's own release steps, so migrations run the way each app already runs
 them: Edu's `provision` job, Retail's backend entrypoint, WhatsApp CRM's `migrate` service.
 
+Step-by-step guides for each app (settings, code updates, database changes, checks, rollback) are
+in [docs/](docs/README.md).
+
 ## Moving to a new server
 
 1. On the old server: `./gavito snapshot`, then copy `backups/gavito-*.tar.enc` off it.
